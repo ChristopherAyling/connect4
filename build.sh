@@ -1,0 +1,1 @@
+zig build-exe c4.zig -target wasm32-freestanding -fno-entry --export=init --export=set --export=put --export=get
