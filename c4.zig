@@ -19,7 +19,6 @@ const Board = struct {
     pub fn show(board: Board, writer: anytype) !void {
         for (0..board.height) |row| {
             for (0..board.width) |col| {
-                // board.buf[row][co4] = 0;
                 try writer.print("{}", .{board.buf[board.height - row - 1][col]});
             }
             try writer.writeAll("\n");

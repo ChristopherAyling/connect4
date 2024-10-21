@@ -10,9 +10,6 @@ const height = 6; // Assuming standard Connect Four height
 var funcs = null;
 
 const render = () => {
-    const width = 7;  // Assuming standard Connect Four width
-    const height = 6; // Assuming standard Connect Four height
-
     for (let row = 0; row < height; row++) {
         const row_data = [];
         for (let col = 0; col < width; col++) {
@@ -47,16 +44,6 @@ request.onload = () => {
         }
     }).then(result => {
         funcs = result.instance.exports;
-        // const init = result.instance.exports.init;
-        // const set = result.instance.exports.set;
-        // const put = result.instance.exports.put;
-        // const get = result.instance.exports.get;
-
-        // funcs.put(0, 1);
-        // funcs.put(0, 2);
-
-        // funcs.put(4, 1);
-        // funcs.put(5, 2);
 
         render();
 
@@ -70,7 +57,6 @@ const click_col = (col) => {
     console.log("clicked col " + col);
     funcs.put(col, active_color);
     active_color = 3 - active_color;
-    // change #cursor-follower background-color css
     document.getElementById("cursor-follower").style.backgroundColor = active_color === 1 ? "red" : "black";
     render();
 }
