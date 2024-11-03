@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 type Game struct {
@@ -29,6 +30,15 @@ func (g *Game) set(row int, col int, value int) {
 	g.Board[row*g.Ncols+col] = value
 }
 
+func (g *Game) put(col int, value int) {
+	for row := 0; row < g.Nrows; row++ {
+		if g.get(row, col) == 0 {
+			g.set(row, col, value)
+			return
+		}
+	}
+}
+
 func (g Game) print() {
 	for row := g.Nrows - 1; row >= 0; row-- {
 		for col := 0; col < g.Ncols; col++ {
@@ -48,6 +58,14 @@ func getGame(w http.ResponseWriter, r *http.Request) {
 
 func putToken(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "working on it")
+
+	col_string := r.URL.Query().Get("col")
+	col, _ := strconv.Atoi(col_string)
+	colour_string := r.URL.Query().Get("color")
+	color, _ := strconv.Atoi(colour_string)
+
+	game.put(col, color)
+	io.WriteString(w, "done")
 }
 
 func resetGame(w http.ResponseWriter, r *http.Request) {
