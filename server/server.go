@@ -69,6 +69,7 @@ func putToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func resetGame(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("reseting")
 	game = newGame(game.Nrows, game.Ncols)
 	io.WriteString(w, "working on it")
 }

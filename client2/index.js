@@ -1,4 +1,4 @@
-let color = 1
+let color = 2
 
 const putCol = async (col) => {
     const params = new URLSearchParams({ col, color }).toString()
@@ -48,8 +48,28 @@ const getGame = async () => {
     return game
 }
 
-window.onload = getGame
+window.onload = async () => {
+    await getGame()
 
-// setInterval(async () => {
-//     await getGame()
-// }, 100)
+    document.getElementById("resetButton").onclick = async () => {
+        await fetch("/api/game/reset")
+        getGame()
+    }
+
+    const cursorFollower = document.getElementById('cursor-follower');
+
+    document.addEventListener('mousemove', (e) => {
+        cursorFollower.style.left = e.clientX + 'px';
+        cursorFollower.style.top = e.clientY + 'px';
+    });
+
+    document.getElementById("changeColor").onclick = async () => {
+        color = color === 1 ? 2 : 1
+        document.getElementById("cursor-follower").style.backgroundColor = color === 1 ? "red" : "black";
+    }
+}
+
+
+setInterval(async () => {
+    await getGame()
+}, 600)
