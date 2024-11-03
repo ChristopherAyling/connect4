@@ -146,7 +146,7 @@ func main() {
 	http.HandleFunc("/api/game/put", putToken)
 	http.HandleFunc("/api/game/reset", resetGame)
 	http.HandleFunc("/api/game/longpoll", longPoll)
-	fs := http.FileServer(http.Dir("../client2"))
+	fs := http.FileServer(http.Dir("./client"))
 	http.Handle("/", fs)
 
 	fmt.Printf("listening...\n")
