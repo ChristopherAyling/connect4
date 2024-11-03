@@ -11,20 +11,21 @@ import (
 )
 
 type Game struct {
-	Nrows int   `json:"nrows"`
-	Ncols int   `json:"ncols"`
-	Board []int `json:"board"`
-	Step  int   `json:"step"`
+	Nrows   int   `json:"nrows"`
+	Ncols   int   `json:"ncols"`
+	Board   []int `json:"board"`
+	Step    int   `json:"step"`
+	waiters []chan int
 }
 
 func newGame(nrows int, ncols int) *Game {
 	board := make([]int, nrows*ncols)
-	game := Game{Nrows: nrows, Ncols: ncols, Board: board}
-	game.set(3, 4, 2)
-	return &game
+	g := Game{Nrows: nrows, Ncols: ncols, Board: board}
+	g.wakeUpdateWaiters()
+	return &g
 }
 
-func (g Game) get(row int, col int) int {
+func (g *Game) get(row int, col int) int {
 	return g.Board[row*g.Ncols+col]
 }
 
@@ -36,9 +37,27 @@ func (g *Game) put(col int, value int) {
 	for row := 0; row < g.Nrows; row++ {
 		if g.get(row, col) == 0 {
 			g.set(row, col, value)
+			g.wakeUpdateWaiters()
 			return
 		}
 	}
+}
+
+func (g *Game) waitForUpdate() {
+	fmt.Printf("waiting\n")
+	c := make(chan int)
+	g.waiters = append(g.waiters, c)
+	<-c
+	fmt.Printf("waited\n")
+}
+
+func (g *Game) wakeUpdateWaiters() {
+	fmt.Printf("waking waiters\n")
+	for i := 0; i < len(g.waiters); i++ {
+		g.waiters[i] <- 88
+	}
+	fmt.Printf("woke waiters\n")
+	g.waiters = make([]chan int, 0)
 }
 
 func (g Game) print() {
@@ -51,26 +70,6 @@ func (g Game) print() {
 }
 
 var game = newGame(6, 7)
-
-// probs need to mutex this
-var waiters []chan int
-
-func wakeWaiters() {
-	fmt.Printf("waking waiters\n")
-	for i := 0; i < len(waiters); i++ {
-		waiters[i] <- 88
-	}
-	fmt.Printf("woke waiters\n")
-	waiters = make([]chan int, 0)
-}
-
-func wait() {
-	fmt.Printf("waiting\n")
-	c := make(chan int)
-	waiters = append(waiters, c)
-	<-c
-	fmt.Printf("waited\n")
-}
 
 func getGame(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("got / request\n")
@@ -86,17 +85,15 @@ func putToken(w http.ResponseWriter, r *http.Request) {
 
 	game.put(col, color)
 	io.WriteString(w, "done")
-	wakeWaiters()
 }
 
 func resetGame(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("reseting\n")
 	game = newGame(game.Nrows, game.Ncols)
-	wakeWaiters()
 }
 
 func longPoll(w http.ResponseWriter, r *http.Request) {
-	wait()
+	game.waitForUpdate()
 	game_json, _ := json.Marshal(game)
 	io.WriteString(w, string(game_json))
 }
