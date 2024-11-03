@@ -1,7 +1,11 @@
+const getRoomName = () => {
+    return new URL(document.location.toString()).searchParams.get("name")
+}
+
 let color = 2
 
 const putCol = async (col) => {
-    const params = new URLSearchParams({ col, color }).toString()
+    const params = new URLSearchParams({ col, color, name: getRoomName() }).toString()
     const response = await fetch("/api/game/put?" + params)
     console.log(response)
 }
@@ -56,7 +60,8 @@ const renderGame = (game) => {
 }
 
 const getGame = async () => {
-    const response = await fetch("/api/game")
+    const params = new URLSearchParams({ name: getRoomName() }).toString()
+    const response = await fetch("/api/game?" + params)
     const game = await response.json()
     renderGame(game)
     return game
@@ -64,7 +69,8 @@ const getGame = async () => {
 
 const longPoll = async () => {
     console.log("long poll started")
-    const response = await fetch("/api/game/longpoll")
+    const params = new URLSearchParams({ name: getRoomName() }).toString()
+    const response = await fetch("/api/game/longpoll?" + params)
     const game = await response.json()
     console.log("long poll finished")
 
@@ -77,7 +83,8 @@ window.onload = async () => {
     await getGame()
 
     document.getElementById("resetButton").onclick = async () => {
-        await fetch("/api/game/reset")
+        const params = new URLSearchParams({ name: getRoomName }).toString()
+        await fetch("/api/game/reset?" + params)
     }
 
     const cursorFollower = document.getElementById('cursor-follower');

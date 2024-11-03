@@ -21,8 +21,12 @@ type Game struct {
 func newGame(nrows int, ncols int) *Game {
 	board := make([]int, nrows*ncols)
 	g := Game{Nrows: nrows, Ncols: ncols, Board: board}
-	g.wakeUpdateWaiters()
 	return &g
+}
+
+func (g *Game) reset() {
+	g.Board = make([]int, g.Nrows*g.Ncols)
+	g.wakeUpdateWaiters()
 }
 
 func (g *Game) get(row int, col int) int {
@@ -69,15 +73,53 @@ func (g Game) print() {
 	}
 }
 
-var game = newGame(6, 7)
+// var game = newGame(6, 7)
+
+type Games struct {
+	rooms map[string]*Game
+}
+
+func newGames() *Games {
+	rooms := make(map[string]*Game)
+	games := Games{
+		rooms: rooms,
+	}
+	return &games
+
+}
+
+func (gs *Games) create(name string) *Game {
+	fmt.Printf("making new game %s\n", name)
+	game := newGame(6, 7)
+	gs.rooms[name] = game
+	return game
+}
+
+func (gs *Games) get(name string) *Game {
+	fmt.Printf("gettng game %s\n", name)
+	game, exists := gs.rooms[name]
+	if !exists {
+		game = gs.create(name)
+	}
+	return game
+}
+
+var games = newGames()
+
+func findGame(r *http.Request) *Game {
+	name := r.URL.Query().Get("name")
+	return games.get(name)
+}
 
 func getGame(w http.ResponseWriter, r *http.Request) {
+	game := findGame(r)
 	fmt.Printf("got / request\n")
 	game_json, _ := json.Marshal(game)
 	io.WriteString(w, string(game_json))
 }
 
 func putToken(w http.ResponseWriter, r *http.Request) {
+	game := findGame(r)
 	col_string := r.URL.Query().Get("col")
 	col, _ := strconv.Atoi(col_string)
 	colour_string := r.URL.Query().Get("color")
@@ -89,10 +131,13 @@ func putToken(w http.ResponseWriter, r *http.Request) {
 
 func resetGame(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("reseting\n")
-	game = newGame(game.Nrows, game.Ncols)
+	game := findGame(r)
+	game.reset()
+	io.WriteString(w, "done")
 }
 
 func longPoll(w http.ResponseWriter, r *http.Request) {
+	game := findGame(r)
 	game.waitForUpdate()
 	game_json, _ := json.Marshal(game)
 	io.WriteString(w, string(game_json))
