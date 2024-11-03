@@ -2,6 +2,8 @@
 
 ## Multiplayer Connect 4 in Zig
 
+![Connect 4 Screenshot](./imgs/screenshot2.png)
+
 ```bash
 cd gomultiplayer
 go run server.go
@@ -13,7 +15,7 @@ Open two browser windows or host it in someway and play from two different devic
 
 ## Connect 4 In Zig + WASM
 
-![Connect 4 Screenshot](screenshot.png)
+![Connect 4 Screenshot](./imgs/screenshot.png)
 
 ```bash
 cd c4zigwasm
