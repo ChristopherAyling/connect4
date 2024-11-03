@@ -1,0 +1,37 @@
+body {
+    background-color: rgb(104, 59, 89);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(7, 30px);
+    grid-template-rows: repeat(6, 30px);
+    gap: 1px;
+}
+
+.cell {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #000;
+    border-radius: 50%;
+}
+
+#game {
+    max-width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#reset_button {
+    background-color: red;
+}
+
+#cursor-follower {
+    position: fixed;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #000;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
