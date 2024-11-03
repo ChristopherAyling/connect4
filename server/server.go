@@ -73,8 +73,6 @@ func (g Game) print() {
 	}
 }
 
-// var game = newGame(6, 7)
-
 type Games struct {
 	rooms map[string]*Game
 }
