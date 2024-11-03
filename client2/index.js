@@ -4,8 +4,25 @@ const putCol = async (col) => {
     const params = new URLSearchParams({ col, color }).toString()
     const response = await fetch("/api/game/put?" + params)
     console.log(response)
-    await getGame()
 }
+
+let domgrid = null
+
+const colorDomGrid = (board) => {
+    console.log("redrawing")
+    for (let i = 0; i < board.length; i++) {
+        let gridItem = domgrid[i]
+        if (board[i] == 1) {
+            gridItem.style.backgroundColor = "red"
+        } else if (board[i] == 2) {
+            gridItem.style.backgroundColor = "black"
+        } else {
+            gridItem.style.backgroundColor = null
+        }
+
+    }
+}
+
 
 const generateGrid = (nrows, ncols, board) => {
     const grid = document.getElementById("grid");
@@ -13,25 +30,22 @@ const generateGrid = (nrows, ncols, board) => {
     grid.style.gridTemplateColumns = `repeat(${ncols}, 30px)`;
     grid.style.gridTemplateRows = `repeat(${nrows}, 30px)`;
 
+    domgrid = Array(nrows * ncols)
+
     for (let i_row = nrows - 1; i_row >= 0; i_row--) {
         for (let i_col = 0; i_col < ncols; i_col++) {
             const i = i_row * ncols + i_col
             const gridItem = document.createElement("div");
             gridItem.classList.add("cell");
             // gridItem.textContent = i;
-            if (board[i] == 1) {
-                gridItem.style.backgroundColor = "red"
-            }
-            if (board[i] == 2) {
-                gridItem.style.backgroundColor = "black"
-            }
             gridItem.addEventListener("click", async () => {
                 await putCol(i_col)
             })
+            domgrid[i] = gridItem
             grid.appendChild(gridItem);
-
         }
     }
+    colorDomGrid(board)
 }
 
 const renderGame = (game) => {
@@ -48,12 +62,22 @@ const getGame = async () => {
     return game
 }
 
+const longPoll = async () => {
+    console.log("long poll started")
+    const response = await fetch("/api/game/longpoll")
+    const game = await response.json()
+    console.log("long poll finished")
+
+    colorDomGrid(game.board)
+
+    await longPoll()
+}
+
 window.onload = async () => {
     await getGame()
 
     document.getElementById("resetButton").onclick = async () => {
         await fetch("/api/game/reset")
-        getGame()
     }
 
     const cursorFollower = document.getElementById('cursor-follower');
@@ -67,9 +91,6 @@ window.onload = async () => {
         color = color === 1 ? 2 : 1
         document.getElementById("cursor-follower").style.backgroundColor = color === 1 ? "red" : "black";
     }
+
+    await longPoll()
 }
-
-
-setInterval(async () => {
-    await getGame()
-}, 600)
